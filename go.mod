@@ -1,4 +1,4 @@
-module adder
+module github.com/kdevb0x/adder
 
 go 1.12
 
