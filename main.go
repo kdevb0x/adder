@@ -77,6 +77,7 @@ func main() {
 	if int(*limitFlag) <= 0 {
 		total, count := scanAndAdd(0)
 		fmt.Printf("Total Amount: %.2f, \n Number of items: %d\n", total, count)
+		os.Exit(0)
 	}
 	total, count := scanAndAdd(*limitFlag)
 	fmt.Printf("Total Amount: %.2f, \n Number of items: %d\n", total, count)
