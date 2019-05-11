@@ -16,6 +16,8 @@ import (
 var limitFlag = pflag.Float64P("limit", "l", -1, `When the sum of the inputs
 reaches this limit, program execution is stopped.`)
 
+var echoFlag = pflag.BoolP("print", "p", false, "Print current total after each input.")
+
 // Add creates a running total of items in exp, and returns total and total items.
 func scanAndAdd(limit float64) (float64, int) {
 	var total float64
@@ -38,7 +40,9 @@ func scanAndAdd(limit float64) (float64, int) {
 		}
 		total += f
 		count++
-
+		if *echoFlag {
+			fmt.Printf("Current total: %.2f\n", total)
+		}
 	}
 	// for _, n := range exp {
 	// 	total += n
