@@ -25,6 +25,10 @@ each input.`)
 	// take user input using fmt pkg instead of bufio
 	fmtFlag = pflag.BoolP("alt", "a", false, `Use an alternative input
 scanner (userfull for debugging).`)
+
+	// reuse the same input line instead of scrolling
+	noscroll = pflag.BoolP("noscroll", "n", false, `Don't add newline after
+	each user input, instead reuse the same line`)
 )
 
 // Add creates a running total of items in exp, and returns total and total items.
@@ -51,6 +55,10 @@ func scanAndAdd(limit float64) (float64, int) {
 		count++
 		if *echoFlag {
 			fmt.Printf("Current total: %.2f\n", total)
+		}
+		if *noscroll {
+			print("\033[1A")
+			print("\033[K")
 		}
 	}
 	// for _, n := range exp {
@@ -85,6 +93,10 @@ func fmtScan(limit float64) (total float64, count int) {
 		count++
 		if *echoFlag {
 			fmt.Printf("Current total: %.2f\n", total)
+		}
+		if *noscroll {
+			print("\033[1A")
+			print("\033[K")
 		}
 	}
 	return
