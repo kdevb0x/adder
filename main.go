@@ -13,10 +13,19 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var limitFlag = pflag.Float64P("limit", "l", -1, `When the sum of the inputs
+var (
+	// set upper limit on totals
+	limitFlag = pflag.Float64P("limit", "l", -1, `When the sum of the inputs
 reaches this limit, program execution is stopped.`)
 
-var echoFlag = pflag.BoolP("print", "p", false, "Print current total after each input.")
+	// echo current totals afer each input
+	echoFlag = pflag.BoolP("print", "p", false, `Print current total after
+each input.`)
+
+	// take user input using fmt pkg instead of bufio
+	fmtFlag = pflag.BoolP("alt", "a", false, `Use an alternative input
+scanner (userfull for debugging).`)
+)
 
 // Add creates a running total of items in exp, and returns total and total items.
 func scanAndAdd(limit float64) (float64, int) {
@@ -50,32 +59,54 @@ func scanAndAdd(limit float64) (float64, int) {
 	return total, count
 }
 
-/*
-func bufioScan() []float64 {
-	var args []float64
-	var input = bufio.NewScanner(os.Stdin)
-	for input.Scan() {
-		t := input.Text()
-		if t == "" {
-			break
-		}
-		f, err := strconv.ParseFloat(t, 64)
+func fmtScan(limit float64) (total float64, count int) {
+	var input float64
+	for {
+		// (kdd) TODO:
+		// fmt.Scanf panics if input is a blank newline, which is our
+		// signal to finish looking for input There has to be a better
+		// way of doing this than catching the panic...
+		defer func() {
+			if err := recover(); err == "unexpected newline" {
+				os.Exit(0)
+			}
+		}()
+		_, err := fmt.Scanf("%f", &input)
 		if err != nil {
 			panic(err)
-			// return nil
 		}
-		args = append(args, float64(f))
-
+		if input == 0 {
+			break
+		}
+		if limit > 0 && (total+input) > limit {
+			return total, count
+		}
+		total += input
+		count++
+		if *echoFlag {
+			fmt.Printf("Current total: %.2f\n", total)
+		}
 	}
-	return args
+	return
 }
-*/
 
 func main() {
 	pflag.Parse()
 	fmt.Println("Enter operand to add, pressing ENTER after each one. Press ENTER with no operand to end.")
 	if int(*limitFlag) <= 0 {
+		if *fmtFlag {
+			total, count := fmtScan(0)
+
+			fmt.Printf("Total Amount: %.2f, \n Number of items: %d\n", total, count)
+			os.Exit(0)
+		}
 		total, count := scanAndAdd(0)
+		fmt.Printf("Total Amount: %.2f, \n Number of items: %d\n", total, count)
+		os.Exit(0)
+
+	}
+	if *fmtFlag {
+		total, count := fmtScan(*limitFlag)
 		fmt.Printf("Total Amount: %.2f, \n Number of items: %d\n", total, count)
 		os.Exit(0)
 	}
